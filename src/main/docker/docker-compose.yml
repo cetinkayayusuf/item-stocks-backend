@@ -1,0 +1,28 @@
+version: '3.8'
+services:
+  app:
+    image: 'item-stocks:latest'
+    build:
+      context: .
+    container_name: app
+    depends_on:
+      - db
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/item-stocks-db
+    ports:
+      - 8000:8080
+    networks:
+      - simple-network
+  db:
+    image: postgres:13
+    container_name: db
+    ports:
+      - 5434:5432
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 123
+      POSTGRES_DB: item-stocks-db
+    networks:
+      - simple-network
+networks:
+  simple-network:

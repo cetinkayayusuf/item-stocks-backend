@@ -3,12 +3,8 @@ services:
   item-stocks-db:
     image: postgres:13
     ports:
-      - 5434:5432
+      - "5432:5432"
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: 123
-      POSTGRES_DB: item-stocks
-    networks:
-      - simple-network
-networks:
-  simple-network:
+      POSTGRES_DB: item-stocks-db

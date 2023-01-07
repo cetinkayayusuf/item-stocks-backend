@@ -1,8 +1,6 @@
 package com.cetinkayayusuf.itemstocks.entities.concretes;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
@@ -18,23 +16,28 @@ import java.util.Set;
         @UniqueConstraint(columnNames = "email")})
 @NoArgsConstructor
 @AllArgsConstructor
+@RequiredArgsConstructor
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)
     private long id;
 
+
+    @NonNull
     @NotBlank
     @Size(max = 30)
     @Column(name = "username")
-    private String userName;
+    private String username;
 
+    @NonNull
     @NotBlank
     @Email
     @Size(max = 50)
     @Column(name = "email")
     private String email;
 
+    @NonNull
     @NotBlank
     @Size(max = 120)
     @Column(name = "password")
@@ -45,4 +48,5 @@ public class User {
             joinColumns = @JoinColumn(name = "user_id"),
             inverseJoinColumns = @JoinColumn(name = "role_id"))
     private Set<Role> roles = new HashSet<>();
+
 }
