@@ -152,22 +152,14 @@ public class AuthController {
         if (token.isPresent() && token.get().getToken().equals(refreshRequest.getRefreshToken()) &&
                 !refreshTokenService.isRefreshExpired(token.get())) {
 
-            Optional<User> user = userService.getByUsername(refreshRequest.getUsername());
-            if (user.isPresent()) {
-                Authentication authentication = authenticationManager.authenticate(
-                        new UsernamePasswordAuthenticationToken(user.get().getUsername(), user.get().getPassword()));
+            User user = token.get().getUser();
+            String jwtToken = jwtUtils.generateJwtToken(user.getUsername());
 
-                SecurityContextHolder.getContext().setAuthentication(authentication);
-                String jwtToken = jwtUtils.generateJwtToken(authentication);
+            JwtRefreshResponse response = new JwtRefreshResponse();
+            response.setUsername(user.getUsername());
+            response.setAccessToken("Bearer " + jwtToken);
 
-                JwtRefreshResponse response = new JwtRefreshResponse();
-                response.setUsername(user.get().getUsername());
-                response.setAccessToken("Bearer " + jwtToken);
-
-                return new ResponseEntity<>(response, HttpStatus.OK);
-            } else {
-                return new ResponseEntity<>("Bad Request.", HttpStatus.BAD_REQUEST);
-            }
+            return new ResponseEntity<>(response, HttpStatus.OK);
         } else {
             return new ResponseEntity<>("refresh token is not valid.", HttpStatus.UNAUTHORIZED);
         }
