@@ -1,6 +1,5 @@
 package com.cetinkayayusuf.itemstocks.entities.concretes;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -9,24 +8,30 @@ import lombok.NonNull;
 import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Size;
-import java.util.List;
 
 @Data
 @Entity
-@Table(name = "items")
+@Table(name = "item_stocks")
 @NoArgsConstructor
 @AllArgsConstructor
-public class Item {
+public class ItemStock {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name="id", nullable = false)
     private long id;
 
     @NonNull
-    @NotBlank
-    @Size(max = 50)
-    @Column(name = "code")
-    private String code;
+    @Column(name = "user_id")
+    private long userId;
+
+    @NonNull
+    @ManyToOne()
+    @JoinColumn(name = "item_id")
+    private Item item;
+
+    @NonNull
+    @Column(name = "amount")
+    private int amount;
 
     @NonNull
     @NotBlank
@@ -39,8 +44,4 @@ public class Item {
     @Size(max = 120)
     @Column(name = "description")
     private String description;
-
-    @OneToMany(mappedBy = "item", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    @JsonIgnore
-    private List<ItemStock> stocks;
 }
