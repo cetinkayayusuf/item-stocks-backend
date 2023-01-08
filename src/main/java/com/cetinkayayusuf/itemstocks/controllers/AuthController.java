@@ -2,6 +2,7 @@ package com.cetinkayayusuf.itemstocks.controllers;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -9,15 +10,17 @@ import javax.validation.Valid;
 
 import com.cetinkayayusuf.itemstocks.auth.jwt.JwtUtils;
 import com.cetinkayayusuf.itemstocks.auth.services.UserDetailsImpl;
-import com.cetinkayayusuf.itemstocks.controllers.dtos.auth.JwtResponse;
-import com.cetinkayayusuf.itemstocks.controllers.dtos.auth.LoginRequest;
-import com.cetinkayayusuf.itemstocks.controllers.dtos.auth.SignupRequest;
+import com.cetinkayayusuf.itemstocks.business.abstracts.RefreshTokenService;
+import com.cetinkayayusuf.itemstocks.business.abstracts.UserService;
+import com.cetinkayayusuf.itemstocks.controllers.dtos.auth.*;
 import com.cetinkayayusuf.itemstocks.dataAccess.abstracts.RoleDao;
 import com.cetinkayayusuf.itemstocks.dataAccess.abstracts.UserDao;
 import com.cetinkayayusuf.itemstocks.entities.concretes.ERole;
+import com.cetinkayayusuf.itemstocks.entities.concretes.RefreshToken;
 import com.cetinkayayusuf.itemstocks.entities.concretes.Role;
 import com.cetinkayayusuf.itemstocks.entities.concretes.User;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -49,6 +52,13 @@ public class AuthController {
     @Autowired
     JwtUtils jwtUtils;
 
+    @Autowired
+    RefreshTokenService refreshTokenService;
+
+    @Autowired
+    UserService userService;
+
+
     @PostMapping("/signin")
     public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
 
@@ -62,12 +72,16 @@ public class AuthController {
         List<String> roles = userDetails.getAuthorities().stream()
                 .map(item -> item.getAuthority())
                 .collect(Collectors.toList());
+        Optional<User> userResult = userService.getByUsername(userDetails.getUsername());
+        if (userResult.isPresent()) {
+            return ResponseEntity.ok(new JwtAuthResponse(
+                    "Bearer " + jwt,
+                    refreshTokenService.createRefreshToken(userResult.get()),
+                    userDetails.getUsername(),
+                    roles));
+        }
 
-        return ResponseEntity.ok(new JwtResponse(jwt,
-                userDetails.getId(),
-                userDetails.getUsername(),
-                userDetails.getEmail(),
-                roles));
+        return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
     }
 
     @PostMapping("/signup")
@@ -116,6 +130,46 @@ public class AuthController {
         user.setRoles(roles);
         userDao.save(user);
 
-        return ResponseEntity.ok("User registered successfully!");
+
+        Authentication authentication = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(signUpRequest.getUsername(), signUpRequest.getPassword()));
+
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+        String jwt = jwtUtils.generateJwtToken(authentication);
+
+        List<String> rolesList = user.getRoles().stream().map(item -> item.getName().toString()).toList();
+
+        return ResponseEntity.ok(new JwtAuthResponse(
+                "Bearer " + jwt,
+                refreshTokenService.createRefreshToken(user),
+                user.getUsername(),
+                rolesList));
+    }
+
+    @PostMapping("/refresh")
+    public ResponseEntity<?> refresh(@Valid @RequestBody JwtRefreshRequest refreshRequest) {
+        Optional<RefreshToken> token = refreshTokenService.getByUsername(refreshRequest.getUsername());
+        if (token.isPresent() && token.get().getToken().equals(refreshRequest.getRefreshToken()) &&
+                !refreshTokenService.isRefreshExpired(token.get())) {
+
+            Optional<User> user = userService.getByUsername(refreshRequest.getUsername());
+            if (user.isPresent()) {
+                Authentication authentication = authenticationManager.authenticate(
+                        new UsernamePasswordAuthenticationToken(user.get().getUsername(), user.get().getPassword()));
+
+                SecurityContextHolder.getContext().setAuthentication(authentication);
+                String jwtToken = jwtUtils.generateJwtToken(authentication);
+
+                JwtRefreshResponse response = new JwtRefreshResponse();
+                response.setUsername(user.get().getUsername());
+                response.setAccessToken("Bearer " + jwtToken);
+
+                return new ResponseEntity<>(response, HttpStatus.OK);
+            } else {
+                return new ResponseEntity<>("Bad Request.", HttpStatus.BAD_REQUEST);
+            }
+        } else {
+            return new ResponseEntity<>("refresh token is not valid.", HttpStatus.UNAUTHORIZED);
+        }
     }
 }
