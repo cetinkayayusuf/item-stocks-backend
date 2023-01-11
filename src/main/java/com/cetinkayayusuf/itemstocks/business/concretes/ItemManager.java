@@ -21,6 +21,11 @@ public class ItemManager implements ItemService {
     }
 
     @Override
+    public List<Item> searchAllByName(String name) {
+        return itemDao.findByNameLike("%"+name+"%");
+    }
+
+    @Override
     public Item addItem(AddItemRequest itemRequest) {
         var item =  new Item();
         item.setCode(itemRequest.getCode());

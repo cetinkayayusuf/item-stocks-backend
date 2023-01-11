@@ -4,6 +4,7 @@ import com.cetinkayayusuf.itemstocks.business.abstracts.ItemService;
 import com.cetinkayayusuf.itemstocks.business.abstracts.ItemStockService;
 import com.cetinkayayusuf.itemstocks.business.abstracts.UserService;
 import com.cetinkayayusuf.itemstocks.controllers.dtos.stock.AddStockRequest;
+import com.cetinkayayusuf.itemstocks.controllers.dtos.stock.SearchStockRequest;
 import com.cetinkayayusuf.itemstocks.controllers.dtos.stock.UpdateStockRequest;
 import com.cetinkayayusuf.itemstocks.entities.concretes.ItemStock;
 import com.cetinkayayusuf.itemstocks.entities.concretes.User;
@@ -88,6 +89,18 @@ public class ItemStockController {
                     .body("Error: User does not exist!");
 
         return ResponseEntity.ok(stockService.getAllByUserId(user.get().getId()));
+    }
+
+    @PostMapping("/search")
+    @PreAuthorize(value = "hasAuthority('USER')")
+    public ResponseEntity<?> search(@RequestBody SearchStockRequest searchStockRequest) {
+        var user = getCurrentUser();
+        if(user.isEmpty())
+            return ResponseEntity
+                    .badRequest()
+                    .body("Error: User does not exist!");
+
+        return ResponseEntity.ok(stockService.searchAllByUserIdAndName(user.get().getId(),searchStockRequest.getName()));
     }
 
     @GetMapping("/{id}")

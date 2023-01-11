@@ -25,6 +25,11 @@ public class ItemStockManager implements ItemStockService {
     }
 
     @Override
+    public List<ItemStock> searchAllByUserIdAndName(long userId, String name) {
+        return stockDao.findByUserIdAndNameLike(userId, "%"+name+"%");
+    }
+
+    @Override
     public ItemStock add(ItemStock stock) {
         return stockDao.save(stock);
     }

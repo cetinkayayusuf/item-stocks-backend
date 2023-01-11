@@ -14,6 +14,7 @@ public interface ItemStockDao extends JpaRepository<ItemStock, Long> {
     Optional<ItemStock> getByUserIdAndId(Long userId, Long id);
     Optional<ItemStock> getDistinctFirstByItem_IdAndUserId(Long itemId, Long userId);
     List<ItemStock> getAllByUserId(Long userId);
+    List<ItemStock> findByUserIdAndNameLike(Long userId, String name);
 
     void deleteItemStockByUserIdAndId(Long userId, Long id);
 }

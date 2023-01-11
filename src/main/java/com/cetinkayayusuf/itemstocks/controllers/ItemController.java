@@ -3,6 +3,7 @@ package com.cetinkayayusuf.itemstocks.controllers;
 import com.cetinkayayusuf.itemstocks.business.abstracts.ItemService;
 import com.cetinkayayusuf.itemstocks.controllers.dtos.item.AddItemRequest;
 import com.cetinkayayusuf.itemstocks.controllers.dtos.item.UpdateItemRequest;
+import com.cetinkayayusuf.itemstocks.controllers.dtos.stock.SearchStockRequest;
 import com.cetinkayayusuf.itemstocks.entities.concretes.Item;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -39,6 +40,12 @@ public class ItemController {
     public ResponseEntity<?> getAll() {
 
         return ResponseEntity.ok(itemService.getAll());
+    }
+
+    @PostMapping("/search")
+    @PreAuthorize(value = "hasAuthority('USER')")
+    public ResponseEntity<?> search(@RequestBody SearchStockRequest searchStockRequest) {
+        return ResponseEntity.ok(itemService.searchAllByName(searchStockRequest.getName()));
     }
 
     @GetMapping("/{id}")

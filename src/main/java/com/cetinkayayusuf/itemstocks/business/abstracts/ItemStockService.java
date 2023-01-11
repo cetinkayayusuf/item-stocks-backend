@@ -9,6 +9,7 @@ import java.util.Optional;
 public interface ItemStockService {
     public List<ItemStock> getAll();
     public List<ItemStock> getAllByUserId(long userId);
+    public List<ItemStock> searchAllByUserIdAndName(long userId, String name);
     public ItemStock add(ItemStock stock);
 
     public Optional<ItemStock> getByIdAndUserId(Long id, Long userId);
