@@ -35,6 +35,11 @@ public class ItemStockManager implements ItemStockService {
     }
 
     @Override
+    public Optional<ItemStock> getByItemIdAndUserId(Long itemId, Long userId) {
+        return stockDao.getDistinctFirstByItem_IdAndUserId(itemId, userId);
+    }
+
+    @Override
     public ItemStock save(ItemStock stock) {
         return stockDao.save(stock);
     }
@@ -57,7 +62,7 @@ public class ItemStockManager implements ItemStockService {
     }
 
     @Override
-    public boolean existsByItemId(Long itemId) {
-        return stockDao.existsByItem_Id(itemId);
+    public boolean existsByItemIdAndUserId(Long itemId, Long userId) {
+        return stockDao.existsByItem_IdAndUserId(itemId, userId);
     }
 }

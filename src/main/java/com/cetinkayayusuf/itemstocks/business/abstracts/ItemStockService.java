@@ -12,10 +12,11 @@ public interface ItemStockService {
     public ItemStock add(ItemStock stock);
 
     public Optional<ItemStock> getByIdAndUserId(Long id, Long userId);
+    public Optional<ItemStock> getByItemIdAndUserId(Long itemId, Long userId);
 
     public ItemStock save(ItemStock stock);
     public Boolean deleteById(Long id);
     public Boolean deleteByIdAndUserId(Long id, Long userId);
 
-    public boolean existsByItemId(Long itemId);
+    public boolean existsByItemIdAndUserId(Long itemId, Long userId);
 }
